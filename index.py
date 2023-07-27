@@ -30,38 +30,68 @@ def conta_corrente(saldo=0, limite=500):
         "LIMITE_SAQUES": 3
     }
 
-def saque(saldo, valor, extrato, limite, numero_saques, LIMITE_SAQUES):
-    excedeu_saldo = valor > saldo
-    excedeu_limite = valor > limite
-    excedeu_saques = numero_saques >= LIMITE_SAQUES
+def saque(numero_conta, valor_saque):
+    for conta, cpf_usuario in contas_correntes:
+        if conta["numero_conta"] == numero_conta:
+            saldo = conta["saldo"]
+            extrato = conta["extrato"]
+            limite = conta["limite"]
+            numero_saques = conta["numero_saques"]
+            LIMITE_SAQUES = conta["LIMITE_SAQUES"]
 
-    if excedeu_saldo:
-        print("Operação falhou! Você não tem saldo suficiente.")
-    elif excedeu_limite:
-        print("Operação falhou! O valor do saque excede o limite.")
-    elif excedeu_saques:
-        print("Operação falhou! Número máximo de saques excedido.")
-    elif valor > 0:
-        saldo -= valor
-        extrato += f"Saque: R$ {valor:.2f}\n"
-        numero_saques += 1
-        print("Saque realizado com sucesso!")
+            excedeu_saldo = valor_saque > saldo
+            excedeu_limite = valor_saque > limite
+            excedeu_saques = numero_saques >= LIMITE_SAQUES
 
-    return saldo, extrato
+            if excedeu_saldo:
+                print("Operação falhou! Você não tem saldo suficiente.")
+            elif excedeu_limite:
+                print("Operação falhou! O valor do saque excede o limite.")
+            elif excedeu_saques:
+                print("Operação falhou! Número máximo de saques excedido.")
+            elif valor_saque > 0:
+                saldo -= valor_saque
+                extrato += f"Saque: R$ {valor_saque:.2f}\n"
+                numero_saques += 1
+                print("Saque realizado com sucesso!")
+                conta["saldo"] = saldo
+                conta["extrato"] = extrato
+                conta["numero_saques"] = numero_saques
+                return saldo, extrato
 
-def deposito(saldo, valor, /, extrato):
-    if valor > 0:
-        saldo += valor
-        extrato += f"Depósito: R$ {valor:.2f}\n"
-        print("Depósito realizado com sucesso!")
+    print("Conta corrente não encontrada.")
+    return None, None
 
-    return saldo, extrato
+def deposito(numero_conta, valor_deposito):
+    for conta, cpf_usuario in contas_correntes:
+        if conta["numero_conta"] == numero_conta:
+            saldo = conta["saldo"]
+            extrato = conta["extrato"]
 
-def extrato(saldo, *, extrato=""):
-    print("\n================ EXTRATO ================")
-    print("Não foram realizadas movimentações." if not extrato else extrato)
-    print(f"\nSaldo: R$ {saldo:.2f}")
-    print("==========================================")
+            if valor_deposito > 0:
+                saldo += valor_deposito
+                extrato += f"Depósito: R$ {valor_deposito:.2f}\n"
+                print("Depósito realizado com sucesso!")
+                conta["saldo"] = saldo
+                conta["extrato"] = extrato
+                return saldo, extrato
+
+    print("Conta corrente não encontrada.")
+    return None, None
+
+def extrato(numero_conta):
+    for conta, cpf_usuario in contas_correntes:
+        if conta["numero_conta"] == numero_conta:
+            saldo = conta["saldo"]
+            extrato = conta["extrato"]
+            print("\n================ EXTRATO ================")
+            print("Não foram realizadas movimentações." if not extrato else extrato)
+            print(f"\nSaldo: R$ {saldo:.2f}")
+            print("==========================================")
+            return saldo, extrato
+
+    print("Conta corrente não encontrada.")
+    return None, None
 
 def criar_conta(nome, data_nascimento, cpf, endereco):
     cpf_usuario = cliente(nome, data_nascimento, cpf, endereco)
